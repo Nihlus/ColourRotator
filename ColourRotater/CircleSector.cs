@@ -46,8 +46,8 @@ namespace ColourRotater
         /// <param name="end">The ending angle of the sector.</param>
         public CircleSector(double start, double end)
         {
-            this.Start = start;
-            this.End = end;
+            this.Start = AngleHelpers.NormalizeAngle(start);
+            this.End = AngleHelpers.NormalizeAngle(end);
         }
 
         /// <summary>
@@ -57,7 +57,12 @@ namespace ColourRotater
         /// <returns>true if the angle is inside the sector; otherwise, false.</returns>
         public bool IsInsideSector(double angle)
         {
-            return angle >= this.Start && angle <= this.End;
+            angle = AngleHelpers.NormalizeAngle(angle);
+
+            var end = (this.End - this.Start) < 0.0 ? (this.End - this.Start + 360.0) : (this.End - this.Start);
+            var mid = (angle - this.Start) < 0.0 ? (angle - this.Start + 360.0) : (angle - this.Start);
+
+            return mid <= end;
         }
 
         /// <summary>
@@ -68,10 +73,10 @@ namespace ColourRotater
         /// <returns>The linear distance.</returns>
         public double AlphaOf(double angle)
         {
-            var totalDist = Math.Abs(this.Start - this.End);
-            var angleDist = Math.Abs(this.Start - angle);
+            angle = AngleHelpers.NormalizeAngle(angle);
+            var angleDist = AngleHelpers.Distance(this.Start, angle);
 
-            return angleDist / totalDist;
+            return angleDist / AngleHelpers.Distance(this.Start, this.End);
         }
 
         /// <summary>
@@ -81,8 +86,7 @@ namespace ColourRotater
         /// <returns>The angle.</returns>
         public double LinearInterpolate(double alpha)
         {
-            var totalDist = Math.Abs(this.Start - this.End);
-            return this.Start + (totalDist * alpha);
+            return (this.Start + (AngleHelpers.Distance(this.Start, this.End) * alpha)) % 360.0;
         }
     }
 }

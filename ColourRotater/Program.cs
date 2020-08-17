@@ -72,31 +72,38 @@ namespace ColourRotater
                 { "red", 0 },
                 { "magenta", 300 },
                 { "purple", 270 },
-                { "blue", 225 },
-                { "cyan", 195 },
-                { "green", 112 },
-                { "blue-green", 164 },
+                { "blue", 240 },
+                { "sky-blue", 200 },
+                { "green", 120 },
+                { "blue-green", 160 },
             };
-
-            var angleOffset = 45;
 
             foreach (var inputFile in _options.InputFiles)
             {
                 var realPath = Path.GetFullPath(inputFile);
-                var outputPath = Path.GetDirectoryName(realPath) ?? Directory.GetCurrentDirectory();
+                var outputPath =
+                    Directory.GetCurrentDirectory() ??
+                    Path.GetDirectoryName(realPath) ??
+                    throw new InvalidOperationException();
+
                 var inputFileName = Path.GetFileNameWithoutExtension(realPath);
 
                 using var image = Image.Load<RgbaVector>(realPath);
-                foreach (var (colour, angle) in baseAngles)
+                foreach (var (colour, hue) in baseAngles)
                 {
-                    var start = NormalizeAngle(angle - angleOffset);
-                    var end = NormalizeAngle(angle + angleOffset);
-
                     var rotated = RotateColours
                     (
                         image,
-                        new CircleSector(_options.Start, _options.End),
-                        new CircleSector(start, end)
+                        new CircleSector
+                        (
+                            _options.Hue - (_options.InWindowSize / 2),
+                            _options.Hue + (_options.InWindowSize / 2)
+                        ),
+                        new CircleSector
+                        (
+                            hue - (_options.OutWindowSize / 2),
+                            hue + (_options.OutWindowSize / 2)
+                        )
                     );
 
                     var outputFile = Path.Combine(outputPath, $"{inputFileName}-{colour}.png");
@@ -136,17 +143,6 @@ namespace ColourRotater
             }
 
             return clone;
-        }
-
-        private static double NormalizeAngle(double angle)
-        {
-            var normalizedAngle = angle % 360.0;
-            if (normalizedAngle < 0)
-            {
-                normalizedAngle += 360.0;
-            }
-
-            return normalizedAngle;
         }
     }
 }

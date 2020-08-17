@@ -37,28 +37,36 @@ namespace ColourRotater
         public IEnumerable<string> InputFiles { get; }
 
         /// <summary>
-        /// Gets the starting angle for the input sector.
+        /// Gets the hue of the dominant colour in the image.
         /// </summary>
-        [Option('s', "start", Required = true, HelpText = "The starting angle for the input sector.")]
-        public double Start { get; }
+        [Option('h', "hue", Required = true, HelpText = "The hue of the dominant colour in the image.")]
+        public double Hue { get; }
 
         /// <summary>
-        /// Gets the ending angle for the input sector.
+        /// Gets the size of the input sector window.
         /// </summary>
-        [Option('e', "end", Required = true, HelpText = "The ending angle for the input sector.")]
-        public double End { get; }
+        [Option('s', "in-size", HelpText = "The size of the input sector window.", Default = 90)]
+        public double InWindowSize { get; }
+
+        /// <summary>
+        /// Gets the size of the output sector window.
+        /// </summary>
+        [Option('o', "out-size", HelpText = "The size of the output sector window.", Default = 90)]
+        public double OutWindowSize { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Options"/> class.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
-        /// <param name="start">The starting angle.</param>
-        /// <param name="end">The ending angle.</param>
-        public Options(IEnumerable<string> inputFiles, double start, double end)
+        /// <param name="hue">The hue of the dominant colour in the image.</param>
+        /// <param name="inWindowSize">The size of the input sector window.</param>
+        /// <param name="outWindowSize">The size of the output sector window.</param>
+        public Options(IEnumerable<string> inputFiles, double hue, double inWindowSize, double outWindowSize)
         {
             this.InputFiles = inputFiles;
-            this.Start = start;
-            this.End = end;
+            this.Hue = hue;
+            this.InWindowSize = inWindowSize;
+            this.OutWindowSize = outWindowSize;
         }
     }
 }
