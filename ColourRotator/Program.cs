@@ -21,10 +21,8 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Resources;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ColourRotator.Json;
@@ -41,8 +39,7 @@ namespace ColourRotator
     /// </summary>
     public class Program
     {
-        private static Options? _options;
-        private static JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
         {
             Converters =
             {
@@ -51,6 +48,8 @@ namespace ColourRotator
             }
         };
 
+        private static Options _options = null!;
+
         /// <summary>
         /// The main entrypoint of the program.
         /// </summary>
@@ -58,23 +57,14 @@ namespace ColourRotator
         /// <returns>The return code of the program.</returns>
         public static async Task<int> Main(string[] args)
         {
+            var didOptionsFailToParse = false;
+
             Parser.Default.ParseArguments<Options>(args)
-                .WithParsed(o => _options = o);
+                .WithParsed(o => _options = o)
+                .WithNotParsed(e => didOptionsFailToParse = true);
 
-            if (_options is null)
+            if (didOptionsFailToParse || !await VerifyOptionsAsync())
             {
-                return 1;
-            }
-
-            foreach (var inputFile in _options.InputFiles)
-            {
-                var realPath = Path.GetFullPath(inputFile);
-                if (File.Exists(realPath))
-                {
-                    continue;
-                }
-
-                await LogError($"File not found: {realPath}");
                 return 1;
             }
 
@@ -82,16 +72,10 @@ namespace ColourRotator
             if (!(_options.ProfilePath is null))
             {
                 var realPath = Path.GetFullPath(_options.ProfilePath);
-                if (!File.Exists(realPath))
-                {
-                    await LogError("Rotation profile not found.");
-                    return 1;
-                }
-
                 await using var file = File.OpenRead(realPath);
                 try
                 {
-                    rotationProfile = await JsonSerializer.DeserializeAsync<RotationProfile>(file, _serializerOptions);
+                    rotationProfile = await JsonSerializer.DeserializeAsync<RotationProfile>(file, SerializerOptions);
                 }
                 catch (Exception ex)
                 {
@@ -124,7 +108,7 @@ namespace ColourRotator
                 rotationProfile = await JsonSerializer.DeserializeAsync<RotationProfile>
                 (
                     defaultProfileResource,
-                    _serializerOptions
+                    SerializerOptions
                 );
             }
 
@@ -191,13 +175,62 @@ namespace ColourRotator
                     var alpha = from.AlphaOf(hsv.H);
                     var newHue = to.LinearInterpolate(alpha);
 
-                    var newRgb = converter.ToRgb(new Hsv((float)newHue, hsv.S, hsv.V));
+                    var newRgb = converter.ToRgb
+                    (
+                        new Hsv
+                        (
+                            (float)newHue,
+                            Math.Clamp((float)(hsv.S + _options.SaturationModifier), 0.0f, 1.0f),
+                            Math.Clamp((float)(hsv.V + _options.ValueModifier), 0.0f, 1.0f)
+                        )
+                    );
 
                     row[y] = new RgbaVector(newRgb.R, newRgb.G, newRgb.B, currentPixelValue.A);
                 }
             }
 
             return clone;
+        }
+
+        private static async Task<bool> VerifyOptionsAsync()
+        {
+            if (_options.SaturationModifier < -1.0 || _options.SaturationModifier > 1.0)
+            {
+                await LogError("Saturation modifier out of range.");
+                return false;
+            }
+
+            if (_options.ValueModifier < -1.0 || _options.ValueModifier > 1.0)
+            {
+                await LogError("Value modifier out of range.");
+                return false;
+            }
+
+            foreach (var inputFile in _options.InputFiles)
+            {
+                var realInputPath = Path.GetFullPath(inputFile);
+                if (File.Exists(realInputPath))
+                {
+                    continue;
+                }
+
+                await LogError($"File not found: {realInputPath}");
+                return false;
+            }
+
+            if (_options.ProfilePath is null)
+            {
+                return true;
+            }
+
+            var realProfilePath = Path.GetFullPath(_options.ProfilePath);
+            if (File.Exists(realProfilePath))
+            {
+                return true;
+            }
+
+            await LogError("Rotation profile not found.");
+            return false;
         }
 
         private static async Task LogError(string errorMessage)

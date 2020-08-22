@@ -67,6 +67,28 @@ namespace ColourRotator
         public bool Verbose { get; }
 
         /// <summary>
+        /// Gets the HSV saturation modifier that should be applied. This value should be between 0 and 1.
+        /// </summary>
+        [Option
+        (
+            "saturation-modifier",
+            HelpText = "The HSV saturation modifier that should be applied. This value should be between -1 and 1.",
+            Default = 0.0
+        )]
+        public double SaturationModifier { get; }
+
+        /// <summary>
+        /// Gets the HSV value modifier that should be applied. This value should be between 0 and 1.
+        /// </summary>
+        [Option
+        (
+            "value-modifier",
+            HelpText = "The HSV value modifier that should be applied. This value should be between -1 and 1.",
+            Default = 0.0
+        )]
+        public double ValueModifier { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Options"/> class.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
@@ -75,6 +97,8 @@ namespace ColourRotator
         /// <param name="outWindowSize">The size of the output sector window.</param>
         /// <param name="profilePath">The path to the rotation profile to use.</param>
         /// <param name="verbose">Whether the application should be verbose.</param>
+        /// <param name="saturationModifier">The HSV saturation modifier.</param>
+        /// <param name="valueModifier">The HSV value modifier.</param>
         public Options
         (
             IEnumerable<string> inputFiles,
@@ -82,7 +106,9 @@ namespace ColourRotator
             double inWindowSize,
             double outWindowSize,
             string? profilePath,
-            bool verbose
+            bool verbose,
+            double saturationModifier,
+            double valueModifier
         )
         {
             this.InputFiles = inputFiles;
@@ -91,6 +117,8 @@ namespace ColourRotator
             this.OutWindowSize = outWindowSize;
             this.ProfilePath = profilePath;
             this.Verbose = verbose;
+            this.SaturationModifier = saturationModifier;
+            this.ValueModifier = valueModifier;
         }
     }
 }
