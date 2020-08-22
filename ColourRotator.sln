@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColourRotater", "ColourRotater\ColourRotater.csproj", "{86843483-16AA-4B9E-825B-518F09F27DFB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColourRotator", "ColourRotator\ColourRotator.csproj", "{86843483-16AA-4B9E-825B-518F09F27DFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

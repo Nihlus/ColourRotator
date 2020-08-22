@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/draft/2019-09/schema#",
+    "$id": "https://github.com/Nihlus/ColourRotator/JSON/rotation-profile.schema.json",
+
+    "title": "Rotation Profile",
+    "description": "Defines a JSON schema for custom colour rotation sets.",
+    "examples": [
+        [
+            {
+                "name": "red",
+                "hue": 0.0
+            },
+            {
+                "name": "green",
+                "hue": 120.0
+            },
+            {
+                "name": "blue",
+                "hue": 240.0
+            }
+        ]
+    ],
+
+    "type": "array",
+    "minItems": 1,
+    "items": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "hue": {
+                "type": "number",
+                "exclusiveMaximum": 360.0,
+                "minimum": 0.0
+            }
+        },
+        "required": [ "name", "hue" ],
+        "additionalProperties": false
+    }
+}

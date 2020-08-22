@@ -23,13 +23,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using System.Resources;
+using System.Text.Json;
+using System.Threading.Tasks;
+using ColourRotator.Json;
 using CommandLine;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.ColorSpaces;
 using SixLabors.ImageSharp.ColorSpaces.Conversion;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace ColourRotater
+namespace ColourRotator
 {
     /// <summary>
     /// The main class of the program.
@@ -37,13 +42,21 @@ namespace ColourRotater
     public class Program
     {
         private static Options? _options;
+        private static JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            Converters =
+            {
+                new RotationProfileConverter(),
+                new TargetColourConverter()
+            }
+        };
 
         /// <summary>
         /// The main entrypoint of the program.
         /// </summary>
         /// <param name="args">The program arguments.</param>
         /// <returns>The return code of the program.</returns>
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(o => _options = o);
@@ -61,22 +74,59 @@ namespace ColourRotater
                     continue;
                 }
 
-                Console.Error.WriteLine($"File not found: {realPath}");
+                await LogError($"File not found: {realPath}");
                 return 1;
             }
 
-            var baseAngles = new Dictionary<string, int>
+            RotationProfile? rotationProfile = null;
+            if (!(_options.ProfilePath is null))
             {
-                { "yellow", 60 },
-                { "orange", 45 },
-                { "red", 0 },
-                { "magenta", 300 },
-                { "purple", 270 },
-                { "blue", 240 },
-                { "sky-blue", 200 },
-                { "green", 120 },
-                { "blue-green", 160 },
-            };
+                var realPath = Path.GetFullPath(_options.ProfilePath);
+                if (!File.Exists(realPath))
+                {
+                    await LogError("Rotation profile not found.");
+                    return 1;
+                }
+
+                await using var file = File.OpenRead(realPath);
+                try
+                {
+                    rotationProfile = await JsonSerializer.DeserializeAsync<RotationProfile>(file, _serializerOptions);
+                }
+                catch (Exception ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+
+                    await LogError("Failed to parse custom colour profile.");
+
+                    if (_options.Verbose)
+                    {
+                        await LogError(ex.ToString());
+                    }
+
+                    return 1;
+                }
+            }
+
+            // Fall back to the default bundled profile
+            if (rotationProfile is null)
+            {
+                await using var defaultProfileResource = Assembly
+                    .GetExecutingAssembly()
+                    .GetManifestResourceStream("ColourRotator.Json.default-profile.json");
+
+                if (defaultProfileResource is null)
+                {
+                    await LogError("No default rotation profile is available.");
+                    return 1;
+                }
+
+                rotationProfile = await JsonSerializer.DeserializeAsync<RotationProfile>
+                (
+                    defaultProfileResource,
+                    _serializerOptions
+                );
+            }
 
             foreach (var inputFile in _options.InputFiles)
             {
@@ -89,8 +139,13 @@ namespace ColourRotater
                 var inputFileName = Path.GetFileNameWithoutExtension(realPath);
 
                 using var image = Image.Load<RgbaVector>(realPath);
-                foreach (var (colour, hue) in baseAngles)
+                foreach (var (colour, hue) in rotationProfile)
                 {
+                    if (_options.Verbose)
+                    {
+                        await Console.Out.WriteLineAsync($"Rotating to {colour}...");
+                    }
+
                     var rotated = RotateColours
                     (
                         image,
@@ -107,7 +162,7 @@ namespace ColourRotater
                     );
 
                     var outputFile = Path.Combine(outputPath, $"{inputFileName}-{colour}.png");
-                    rotated.SaveAsPng(outputFile);
+                    await rotated.SaveAsPngAsync(outputFile);
                 }
             }
 
@@ -143,6 +198,16 @@ namespace ColourRotater
             }
 
             return clone;
+        }
+
+        private static async Task LogError(string errorMessage)
+        {
+            var originalColour = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+
+            await Console.Error.WriteLineAsync(errorMessage);
+
+            Console.ForegroundColor = originalColour;
         }
     }
 }

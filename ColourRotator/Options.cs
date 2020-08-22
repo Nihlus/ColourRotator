@@ -23,7 +23,7 @@
 using System.Collections.Generic;
 using CommandLine;
 
-namespace ColourRotater
+namespace ColourRotator
 {
     /// <summary>
     /// Represents the command-line options to the program.
@@ -55,18 +55,42 @@ namespace ColourRotater
         public double OutWindowSize { get; }
 
         /// <summary>
+        /// Gets the path to the rotation profile to use.
+        /// </summary>
+        [Option('p', "profile", HelpText = "The path to the rotation profile to use.", Default = null)]
+        public string? ProfilePath { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the application should be verbose.
+        /// </summary>
+        [Option('v', "verbose", HelpText = "Whether the application should be verbose.", Default = false)]
+        public bool Verbose { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Options"/> class.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
         /// <param name="hue">The hue of the dominant colour in the image.</param>
         /// <param name="inWindowSize">The size of the input sector window.</param>
         /// <param name="outWindowSize">The size of the output sector window.</param>
-        public Options(IEnumerable<string> inputFiles, double hue, double inWindowSize, double outWindowSize)
+        /// <param name="profilePath">The path to the rotation profile to use.</param>
+        /// <param name="verbose">Whether the application should be verbose.</param>
+        public Options
+        (
+            IEnumerable<string> inputFiles,
+            double hue,
+            double inWindowSize,
+            double outWindowSize,
+            string? profilePath,
+            bool verbose
+        )
         {
             this.InputFiles = inputFiles;
             this.Hue = hue;
             this.InWindowSize = inWindowSize;
             this.OutWindowSize = outWindowSize;
+            this.ProfilePath = profilePath;
+            this.Verbose = verbose;
         }
     }
 }

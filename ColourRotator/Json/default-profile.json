@@ -1,0 +1,38 @@
+[
+    {
+        "name": "red",
+        "hue": 0.0
+    },
+    {
+        "name": "green",
+        "hue": 120.0
+    },
+    {
+        "name": "blue",
+        "hue": 240.0
+    },
+    {
+        "name": "yellow",
+        "hue": 60.0
+    },
+    {
+        "name": "blue-green",
+        "hue": 160.0
+    },
+    {
+        "name": "magenta",
+        "hue": 300.0
+    },
+    {
+        "name": "orange",
+        "hue": 45.0
+    },
+    {
+        "name": "sky-blue",
+        "hue": 200.0
+    },
+    {
+        "name": "purple",
+        "hue": 270.0
+    }
+]

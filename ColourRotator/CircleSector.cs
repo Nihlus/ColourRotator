@@ -22,7 +22,7 @@
 
 using System;
 
-namespace ColourRotater
+namespace ColourRotator
 {
     /// <summary>
     /// Represents a sector in a circle.
