@@ -67,7 +67,7 @@ namespace ColourRotator
         public bool Verbose { get; }
 
         /// <summary>
-        /// Gets the HSV saturation modifier that should be applied. This value should be between 0 and 1.
+        /// Gets the HSV saturation modifier that should be applied. This value should be between -1 and 1.
         /// </summary>
         [Option
         (
@@ -78,7 +78,7 @@ namespace ColourRotator
         public double SaturationModifier { get; }
 
         /// <summary>
-        /// Gets the HSV value modifier that should be applied. This value should be between 0 and 1.
+        /// Gets the HSV value modifier that should be applied. This value should be between -1 and 1.
         /// </summary>
         [Option
         (
