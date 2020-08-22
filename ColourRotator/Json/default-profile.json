@@ -13,11 +13,11 @@
     },
     {
         "name": "yellow",
-        "hue": 60.0
+        "hue": 50.0
     },
     {
         "name": "blue-green",
-        "hue": 160.0
+        "hue": 170.0
     },
     {
         "name": "magenta",
@@ -25,7 +25,7 @@
     },
     {
         "name": "orange",
-        "hue": 45.0
+        "hue": 30.0
     },
     {
         "name": "sky-blue",
@@ -33,6 +33,6 @@
     },
     {
         "name": "purple",
-        "hue": 270.0
+        "hue": 275.0
     }
 ]
